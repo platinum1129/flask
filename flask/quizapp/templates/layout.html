@@ -11,8 +11,8 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <img src="{{ url_for('static', filename='images/icon.png') }}">
+            <a class="navbar-brand" href="http://127.0.0.1:5000">
+                <img style="width:auto; height:auto" src="{{ url_for('static', filename='images/icon.png') }}">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
                 aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,10 +20,11 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                    <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    <span style="font-size: 2.5em;">Quizアプリ</span>
+                    <!-- <a class="nav-link active" aria-current="page" href="#">Home</a>
                     <a class="nav-link" href="#">Features</a>
                     <a class="nav-link" href="#">Pricing</a>
-                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a> -->
                 </div>
             </div>
         </div>
@@ -35,3 +36,6 @@
         crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='js/common.js') }}"></script>
 </body>
+<footer style="text-align:right; padding-right:10px;">
+    © 2024 森松寺
+</footer>

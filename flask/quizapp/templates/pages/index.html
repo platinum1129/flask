@@ -2,16 +2,72 @@
 
 {% block content %}
 <div class="container">
-    <h1>index.html</h1>
+    <!-- クイズ生成 -->
     <div class="container mt-4">
-        <h2>クイズ追加</h2>
         <form action="/add_quiz" method="POST">
-            <label for="theme">お題</label>
-            <input name="theme"></input>
-            <label for="questions">問題数</label>
-            <input name="questions" size="1" maxlength="1"></input>
-            <button type="submit" class="btn btn-primary">クイズ追加</button>
+            <div>
+                <div class="row mb-3">
+                    <label for="label1" class="col-sm-2 col-form-label text-center">お題</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="label1" name="theme" value="{{ theme }}">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="label2" class="col-sm-2 col-form-label text-center">問題数</label>
+                    <div class="col-sm-2">
+                        <select class="form-select" id="label2" name="questions_count">
+                            <option value="1" {% if questions_count == "1" %} selected {% endif %}>1</option>
+                            <option value="2" {% if questions_count == "2" %} selected {% endif %}>2</option>
+                            <option value="3" {% if questions_count == "3" %} selected {% endif %}>3</option>
+                            <option value="4" {% if questions_count == "4" %} selected {% endif %}>4</option>
+                            <option value="5" {% if questions_count == "5" %} selected {% endif %}>5</option>
+                            <option value="6" {% if questions_count == "6" %} selected {% endif %}>6</option>
+                            <option value="7" {% if questions_count == "7" %} selected {% endif %}>7</option>
+                            <option value="8" {% if questions_count == "8" %} selected {% endif %}>8</option>
+                            <option value="9" {% if questions_count == "9" %} selected {% endif %}>9</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="label3" class="col-sm-2 col-form-label text-center">解説</label>
+                    <div class="col-sm-2">
+                        <select class="form-select" id="label3" name="explain">
+                            <option value="0" {% if explain == "0" %} selected {% endif %}>なし</option>
+                            <option value="1" {% if explain == "1" %} selected {% endif %}>あり</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="label4" class="col-sm-2 col-form-label text-center"></label>
+                    <div class="col-sm-2">
+                        <button type="submit" class="btn btn-outline-primary" id="label4">クイズ生成</button>
+                    </div>
+                </div>
+            </div>
         </form>
     </div>
+    {% if questions != null %}
+    <!-- クイズ一覧 -->
+    <div class="container mt-4">
+        {% for q in questions %}
+            <br/>
+            <div class="p-2 mb-2 list-group-item-primary" id="question_no_{{ q.question_no }}"
+                data-question-correct="{{q.correct_no}}">Q{{ q.question_no }}.{{ q.question_content }}</div>
+            <fieldset class="radio">
+                {% for c in choices %}
+                {% if q.quiz_id == c.quiz_id and q.question_no == c.question_no %}
+                <label><input type="radio" name="question_no_{{ c.question_no }}" value="{{ c.choice_no }}" />{{ c.choice_content }}</label>
+                {% endif %}
+                {% endfor %}
+            </fieldset>
+            <div id="explanation_no_{{ q.question_no }}" style="visibility:hidden">
+                {{q.explanation}}
+            </div>
+        {% endfor %}
+    </div>
+    <div class="text-center">
+        <button id="btnAnswer" class="btn btn-outline-primary">回答！</button>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

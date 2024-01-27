@@ -14,13 +14,14 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 def index():
     return render_template('pages/index.html')
 
-@app.route('/add_quiz', methods=['GET', 'POST'])
+@app.route('/add_quiz', methods=['POST'])
 def add_quiz():
 
     print("ChatGPT Start")
 
     form_theme = request.form.get('theme')
-    form_questions = request.form.get('questions')
+    form_questions = request.form.get('questions_count')
+    form_explain = request.form.get('explain')
 
     req_content = '「' + form_theme + '」に関する4択クイズを作成して。'\
                 + '・問題数：' + form_questions + '問'\
@@ -30,89 +31,99 @@ def add_quiz():
                 + '・選択肢は1～4のランダムになるようにしてください'\
                 + '・コードスニペットは不要'\
                 + 'レスポンス例：'\
-+ '''
-[
-  {
-    "question": "太陽系で最も大きな天体はどれ？",
-    "choices": [
-      "地球",
-      "太陽",
-      "月",
-      "火星"
-    ],
-    "correct": "2"
-  },
-  {
-    "question": "宇宙空間にはどのくらいの星が存在すると考えられている？",
-    "choices": [
-      "100億個",
-      "1000億個",
-      "100兆個",
-      "無限個"
-    ],
-    "correct": "3"
-  }
-]
-'''
+                + '''
+                [
+                  {
+                    "question": "太陽系で最も大きな天体はどれ？",
+                    "choices": [
+                      "地球",
+                      "太陽",
+                      "月",
+                      "火星"
+                    ],
+                    "correct": "2"
+                  },
+                  {
+                    "question": "宇宙空間にはどのくらいの星が存在すると考えられている？",
+                    "choices": [
+                      "100億個",
+                      "1000億個",
+                      "100兆個",
+                      "無限個"
+                    ],
+                    "correct": "3"
+                  }
+                ]
+                '''
     res_content_question = callChatGPT(req_content)
 
     print("add_quiz start")
-    if request.method == 'GET':
-        return render_template('pages/index.html')
+    db.session.query(Quiz).delete()
+    db.session.query(Question).delete()
+    db.session.query(Choice).delete()
 
-    if request.method == 'POST':
+    res_dict = json.loads(res_content_question)
 
-        db.session.query(Quiz).delete()
-        db.session.query(Question).delete()
-        db.session.query(Choice).delete()
+    print(res_dict)
 
-        res_dict = json.loads(res_content_question)
+    form_source_id = '0'
+    form_quiz_id = '1'
 
-        print(res_dict)
+    quiz = Quiz(
+        source_id = form_source_id,
+        quiz_id = form_quiz_id,
+        question_count = form_questions,
+    )
+    db.session.add(quiz)
 
-        form_source_id = '0'
-        form_quiz_id = '1'
+    for i in range(len(res_dict)):
 
-        quiz = Quiz(
-            source_id = form_source_id,
-            quiz_id = form_quiz_id,
-            question_count = form_questions,
-        )
-        db.session.add(quiz)
-
-        for i in range(len(res_dict)):
-
-            res_question = res_dict[i - 1]['question']
-            res_correct = res_dict[i - 1]['correct']
-            res_choices = res_dict[i - 1]['choices']
-            res_explanation = ''
-            # res_explanation = callChatGPT(
-            #      res_question + 'に対する答えと解説を200文字以内で作成して'
-            # )
-
-            question = Question(
-                quiz_id = form_quiz_id,
-                question_no = i,
-                question_content = res_question,
-                explanation = res_explanation,
-                correct_no = res_correct
+        res_question = res_dict[i - 1]['question']
+        res_correct = res_dict[i - 1]['correct']
+        res_choices = res_dict[i - 1]['choices']
+        res_explanation = ''
+        if form_explain == '1':
+            res_explanation = callChatGPT(
+                  res_question + 'に対する答えと解説を200文字以内で作成して'
             )
-            db.session.add(question)
 
-            choice_no = 0
-            for res_choice in res_choices:
-                choice_no += 1
-                choice = Choice(
-                    quiz_id = form_quiz_id,
-                    question_no = i,
-                    choice_no = choice_no,
-                    choice_content = res_choice,
-                    correct_flg = False
-                )
-                db.session.add(choice)
+        res_question_no = i + 1
+        question = Question(
+            quiz_id = form_quiz_id,
+            question_no = res_question_no,
+            question_content = res_question,
+            explanation = res_explanation,
+            correct_no = res_correct
+        )
+        db.session.add(question)
 
-        db.session.commit()
-        return redirect(url_for('index'))
+        res_choice_no = 0
+        for res_choice in res_choices:
+            res_choice_no += 1
+            choice = Choice(
+                quiz_id = form_quiz_id,
+                question_no = res_question_no,
+                choice_no = res_choice_no,
+                choice_content = res_choice,
+                correct_flg = False
+            )
+            db.session.add(choice)
+
+    db.session.commit()
+
+    # DB登録データ取得
+    quizes = Quiz.query.all()
+    questions = Question.query.all()
+    choices = Choice.query.all()
+    return render_template('pages/index.html', 
+                          theme = form_theme,
+                          questions_count = form_questions,
+                          explain = form_explain,
+                          quizes = quizes,
+                          questions = questions,
+                          choices = choices
+                          )
+    # return redirect(url_for('index'))
     
 
 def callChatGPT(req_content):
@@ -130,3 +141,4 @@ def callChatGPT(req_content):
     print(response.choices[0].message.content)
     print("ChatGPT End")
     return response.choices[0].message.content.strip("```json")
+

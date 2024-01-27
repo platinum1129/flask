@@ -1,4 +1,49 @@
-h1 {
-    color: blue;
-    border-bottom: double 6px #87CEFA;
+.td {
+    vertical-align: top;
+}
+.radio {
+    border: none;
+}
+.radio label {
+    display: flex;
+    align-items: center;
+    gap: 0 .5em;
+    position: relative;
+    max-width: 400px;
+    margin-bottom: .4em;
+    padding: .5em .7em;
+    border: 1px solid #2589d0;
+    border-radius: 3px;
+    background-color: #2589d026;
+    cursor: pointer;
+}
+
+.radio label:has(:checked) {
+    background-color: #2589d0;
+    color: #fff;
+}
+
+.radio label::before,
+.radio label:has(:checked)::after {
+    border-radius: 50%;
+    content: '';
+}
+
+.radio label::before {
+    width: 14px;
+    height: 14px;
+    background-color: #fff;
+}
+
+.radio label:has(:checked)::after {
+    position: absolute;
+    top: 50%;
+    left: calc(7px + .7em);
+    transform: translate(-50%, -50%);
+    width: 7px;
+    height: 7px;
+    background-color: #2589d0;
+}
+.radio input {
+    display: none;
 }
