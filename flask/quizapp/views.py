@@ -4,6 +4,7 @@ from quizapp import db
 from quizapp.models.quiz import Quiz
 from quizapp.models.question import Question
 from quizapp.models.choice import Choice
+from sqlalchemy import func
 import os
 import openai
 import json
@@ -16,6 +17,7 @@ def index():
 
 @app.route('/add_quiz', methods=['POST'])
 def add_quiz():
+    print("add_quiz Start")
 
     print("ChatGPT Start")
 
@@ -23,13 +25,18 @@ def add_quiz():
     form_questions = request.form.get('questions_count')
     form_explain = request.form.get('explain')
 
+    # 生成済問題の取得
+    created_questions = set()
+    for q in Question.query.all():
+        created_questions.add(q.question_content)
+    print(created_questions)
+
     req_content = '「' + form_theme + '」に関する4択クイズを作成して。'\
                 + '・問題数：' + form_questions + '問'\
                 + '・正答率の目標：50% 普通程度に'\
                 + '・レスポンスはJSON形式'\
                 + '・作成できない場合、{"error":""}を返す'\
-                + '・選択肢は1～4のランダムになるようにしてください'\
-                + '・コードスニペットは不要'\
+                + '・次の問題は除く：' + str(type(created_questions))\
                 + 'レスポンス例：'\
                 + '''
                 [
@@ -55,9 +62,9 @@ def add_quiz():
                   }
                 ]
                 '''
+    print('req_content: ' + req_content)
     res_content_question = callChatGPT(req_content)
 
-    print("add_quiz start")
     db.session.query(Quiz).delete()
     db.session.query(Question).delete()
     db.session.query(Choice).delete()
@@ -66,8 +73,17 @@ def add_quiz():
 
     print(res_dict)
 
+    # ソースID(0固定)
     form_source_id = '0'
+
+    # クイズID採番
     form_quiz_id = '1'
+    # max_quiz_id = db.session.query(func.max(Question.quiz_id)).scalar()
+    # if max_quiz_id is None:
+    #     max_quiz_id = 1
+    # else:
+    #     max_quiz_id = int(max_quiz_id) + 1
+    # form_quiz_id = str(max_quiz_id)
 
     quiz = Quiz(
         source_id = form_source_id,
@@ -115,6 +131,7 @@ def add_quiz():
     quizes = Quiz.query.all()
     questions = Question.query.all()
     choices = Choice.query.all()
+    print("add_quiz end")
     return render_template('pages/index.html', 
                           theme = form_theme,
                           questions_count = form_questions,
@@ -123,7 +140,6 @@ def add_quiz():
                           questions = questions,
                           choices = choices
                           )
-    # return redirect(url_for('index'))
     
 
 def callChatGPT(req_content):

@@ -51,7 +51,7 @@
     <div class="container mt-4">
         {% for q in questions %}
             <br/>
-            <div class="p-2 mb-2 list-group-item-primary" id="question_no_{{ q.question_no }}"
+            <div class="p-2 mb-2 list-group-item-primary" id="question_no_{{ q.question_no }}" style="font-weight:bold"
                 data-question-correct="{{q.correct_no}}">Q{{ q.question_no }}.{{ q.question_content }}</div>
             <fieldset class="radio">
                 {% for c in choices %}
@@ -60,13 +60,13 @@
                 {% endif %}
                 {% endfor %}
             </fieldset>
-            <div id="explanation_no_{{ q.question_no }}" style="visibility:hidden">
+            <div id="explanation_no_{{ q.question_no }}" style="display:none">
                 {{q.explanation}}
             </div>
         {% endfor %}
     </div>
     <div class="text-center">
-        <button id="btnAnswer" class="btn btn-outline-primary">回答！</button>
+        <button id="btnAnswer" class="btn btn-outline-primary m-5">回答！</button>
     </div>
     {% endif %}
 </div>
